@@ -43,7 +43,7 @@
           <v-checkbox v-model="settings.useBitSpeed" hide-details class="ma-0 pa-0" :label="$t('modals.settings.vueTorrent.general.useBitSpeed')" />
         </v-col>
         <v-col cols="12" sm="6">
-          <v-checkbox v-model="settings.useCompactView" hide-details class="ma-0 pa-0" :label="$t('modals.settings.vueTorrent.general.useCompactView')" />
+          <v-checkbox v-model="settings.useTableView" hide-details class="ma-0 pa-0" :label="$t('modals.settings.vueTorrent.general.useTableView')" />
         </v-col>
       </v-row>
     </v-list-item>

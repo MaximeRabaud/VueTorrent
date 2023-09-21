@@ -104,33 +104,46 @@
       <p class="grey--text">{{ $t('dashboard.emptyTorrentList') }}</p>
     </div>
     <div v-else>
-      <v-list class="pa-0 transparent">
-        <v-list-item
-          v-for="(torrent, index) in paginatedData"
-          :key="torrent.hash"
-          class="pa-0"
-          :class="isMobile ? 'mb-1' : 'mb-2'"
-          @mousedown="hideTorrentRightClickMenu"
-          @touchstart="strTouchStart($event, { torrent })"
-          @touchmove="strTouchMove($event)"
-          @touchend="strTouchEnd($event)"
-          @contextmenu="showTorrentRightClickMenu($event, { torrent })"
-          @dblclick.prevent="showInfo(torrent.hash)"
-        >
-          <template #default>
-            <v-expand-x-transition>
-              <v-card v-show="selectMode" flat class="transparent">
-                <v-list-item-action>
-                  <v-checkbox color="grey" :input-value="selected_torrents.indexOf(torrent.hash) !== -1" @click="selectTorrent(torrent.hash)" />
-                </v-list-item-action>
-              </v-card>
-            </v-expand-x-transition>
-            <v-list-item-content class="pa-0 rounded">
-              <Torrent :torrent="torrent" :index="index" />
-            </v-list-item-content>
-          </template>
-        </v-list-item>
-      </v-list>
+      <div v-if="useTableView">
+        <TorrentTable 
+           :torrents="paginatedData" 
+           :heads="tableHeader" 
+           :showTorrentRightClickMenu="showTorrentRightClickMenu" 
+           :hideTorrentRightClickMenu="hideTorrentRightClickMenu"
+           :strTouchStart="strTouchStart"
+           :srtTouchMove="strTouchMove"
+           :srtTouchEnd="strTouchEnd"
+           />
+      </div>
+      <div v-else>
+        <v-list class="pa-0 transparent">
+          <v-list-item
+              v-for="(torrent, index) in paginatedData"
+              :key="torrent.hash"
+              class="pa-0"
+              :class="isMobile ? 'mb-1' : 'mb-2'"
+              @mousedown="hideTorrentRightClickMenu"
+              @touchstart="strTouchStart($event, { torrent })"
+              @touchmove="strTouchMove($event)"
+              @touchend="strTouchEnd($event)"
+              @contextmenu="showTorrentRightClickMenu($event, { torrent })"
+              @dblclick.prevent="showInfo(torrent.hash)"
+              >
+              <template #default>
+                <v-expand-x-transition>
+                  <v-card v-show="selectMode" flat class="transparent">
+                    <v-list-item-action>
+                      <v-checkbox color="grey" :input-value="selected_torrents.indexOf(torrent.hash) !== -1" @click="selectTorrent(torrent.hash)" />
+                    </v-list-item-action>
+                  </v-card>
+                </v-expand-x-transition>
+                <v-list-item-content class="pa-0 rounded">
+                  <Torrent :torrent="torrent" :index="index" />
+                </v-list-item-content>
+              </template>
+          </v-list-item>
+        </v-list>
+      </div>
       <div v-if="!topPagination" class="text-center mb-5">
         <v-pagination v-if="pageCount > 1 && !hasSearchFilter" v-model="pageNumber" :length="pageCount" :total-visible="7" @input="toTop" />
       </div>
@@ -289,7 +302,11 @@ export default {
     paginationSize() {
       return this.getWebuiSettings().paginationSize
     },
-    pageCount() {
+
+    useTableView() {
+      return this.getWebuiSettings().useTableView
+    },
+    pageCount() { 
       const l = this.torrents.length
       const s = this.paginationSize
       if (s == 0) return 1
@@ -305,6 +322,9 @@ export default {
       }
 
       return this.torrents.slice(start, end)
+    },
+    tableHeader(){
+      return this.getWebuiSettings().doneDesktopTorrentProperties.filter(i => i.active)
     },
     torrentCountString() {
       return this.getTorrentCountString()
@@ -356,6 +376,7 @@ export default {
   },
   methods: {
     strTouchStart(e, data) {
+      console.log("strTouchStart")
       this.trcMoveTick = 0
       this.hideTorrentRightClickMenu(e)
       clearTimeout(this.tmCalc.TouchTimer)
@@ -375,6 +396,7 @@ export default {
       this.tmCalc.LastHash = data.torrent.hash
     },
     strTouchMove(e) {
+      console.log("strTouchMove")
       this.trcMoveTick++
       if (this.trcMenu.show === true && e.touches.length > 1) {
         e.preventDefault()
@@ -384,10 +406,12 @@ export default {
       }
     },
     strTouchEnd(e) {
+      console.log("strTouchEnd")
       clearTimeout(this.tmCalc.TouchTimer)
       if (this.trcMenu.show) e.preventDefault()
     },
     showTorrentRightClickMenu(e, data, touchmode = false) {
+      console.log("showTorrentRightClickMenu")
       if (this.trcMenu.show) return false
       this.data = data
       if (e.preventDefault) e.preventDefault()
@@ -404,6 +428,7 @@ export default {
       })
     },
     hideTorrentRightClickMenu() {
+      console.log("hideTorrentRightClickMenu")
       if (!this.selectMode && this.getModals().length === 0) {
         this.resetSelected()
       }
